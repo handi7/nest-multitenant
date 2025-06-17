@@ -5,6 +5,9 @@ import { JwtModule } from "@nestjs/jwt";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { EnvConfig } from "src/dtos/env-config.dto";
 import { RedisModule } from "src/redis/redis.module";
+import { APP_GUARD } from "@nestjs/core";
+import { AuthGuard } from "src/common/guards/auth.guard";
+import { PermissionsGuard } from "src/common/guards/permissions.guard";
 
 @Module({
   imports: [
@@ -19,6 +22,10 @@ import { RedisModule } from "src/redis/redis.module";
     RedisModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    { provide: APP_GUARD, useClass: AuthGuard },
+    { provide: APP_GUARD, useClass: PermissionsGuard },
+  ],
 })
 export class AuthModule {}

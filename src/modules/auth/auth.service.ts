@@ -147,6 +147,14 @@ export class AuthService {
       const redisExp = 60 * 60 * 24 * 7; // 7 hari TTL
       await this.redis.set(`session:${user.id}`, redisValue, redisExp);
 
+      if (user.roles.length === 1) {
+        await this.redis.set(
+          `session:${user.id}:branch`,
+          user.roles[0]?.branch_id ?? null,
+          redisExp,
+        );
+      }
+
       return { access_token, refresh_token, user: userData };
     } catch (error) {
       return Promise.reject(error);

@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "PermissionEnum" AS ENUM ('user_view', 'user_create', 'user_edit', 'user_delete');
+
 -- CreateTable
 CREATE TABLE "tenants" (
     "id" TEXT NOT NULL,
@@ -63,13 +66,20 @@ CREATE TABLE "user_roles" (
 -- CreateTable
 CREATE TABLE "permissions" (
     "id" TEXT NOT NULL,
-    "action" TEXT NOT NULL,
-    "role_id" TEXT NOT NULL,
+    "name" "PermissionEnum" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
 
     CONSTRAINT "permissions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "role_permissions" (
+    "role_id" TEXT NOT NULL,
+    "permission_id" TEXT NOT NULL,
+
+    CONSTRAINT "role_permissions_pkey" PRIMARY KEY ("role_id","permission_id")
 );
 
 -- CreateIndex
@@ -94,4 +104,7 @@ ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("
 ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_branch_id_fkey" FOREIGN KEY ("branch_id") REFERENCES "branches"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "permissions" ADD CONSTRAINT "permissions_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "role_permissions" ADD CONSTRAINT "role_permissions_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "roles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "role_permissions" ADD CONSTRAINT "role_permissions_permission_id_fkey" FOREIGN KEY ("permission_id") REFERENCES "permissions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

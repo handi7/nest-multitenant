@@ -1,17 +1,18 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import { RegisterDto } from "./dto/register.dto";
 import { PrismaService } from "src/prisma/prisma.service";
 import { compareSync, genSalt, hash } from "bcryptjs";
 import { LoginDto } from "./dto/login.dto";
+import { JwtService } from "@nestjs/jwt";
+import { RedisService } from "src/redis/redis.service";
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redis: RedisService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async register(dto: RegisterDto) {
     try {
@@ -72,12 +73,23 @@ export class AuthService {
           },
         });
 
+        const permissions = await tx.permission.findMany();
+        const rolePermissionsToInsert = permissions.map((item) => ({
+          permission_id: item.id,
+          role_id: role.id,
+        }));
+
+        await tx.rolePermission.createManyAndReturn({ data: rolePermissionsToInsert });
+
         const userRole = await tx.userRole.create({
           data: {
             user: { connect: { id: createdUser.id } },
             role: { connect: { id: role.id } },
           },
-          include: { role: { include: { permissions: true } }, branch: true },
+          include: {
+            role: { include: { permissions: { include: { permission: true } } } },
+            branch: true,
+          },
         });
 
         createdUser.roles = [...createdUser.roles, userRole];
@@ -95,13 +107,47 @@ export class AuthService {
     try {
       const user = await this.prisma.user.findFirst({
         where: { email: { equals: dto.email, mode: "insensitive" } },
+        include: {
+          tenant: true,
+          roles: {
+            include: {
+              branch: true,
+              role: {
+                include: {
+                  permissions: {
+                    include: { permission: true },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!user || !compareSync(dto.password, user.password)) {
         throw new BadRequestException("Invalid credentials.");
       }
 
-      return user;
+      const { password: _, ...userData } = user;
+
+      const jwtPayload = {
+        id: user.id,
+        email: user.email,
+        timestamp: new Date().toISOString(),
+      };
+
+      const access_token = this.jwtService.sign(jwtPayload, { expiresIn: "10h" });
+
+      const refresh_token = this.jwtService.sign(
+        { ...jwtPayload, isRefresh: true },
+        { expiresIn: "7d" },
+      );
+
+      const redisValue = JSON.stringify({ access_token, refresh_token });
+      const redisExp = 60 * 60 * 24 * 7; // 7 hari TTL
+      await this.redis.set(`session:${user.id}`, redisValue, redisExp);
+
+      return { access_token, refresh_token, user: userData };
     } catch (error) {
       return Promise.reject(error);
     }

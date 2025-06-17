@@ -62,7 +62,7 @@ model Role {
     tenant_id String
 
     tenant      Tenant       @relation(fields: [tenant_id], references: [id])
-    permissions Permission[]
+    permissions RolePermission[]
     user_roles  UserRole[]
 
     created_at DateTime  @default(now())
@@ -91,14 +91,30 @@ model UserRole {
 
 model Permission {
     id      String @id @default(uuid())
-    action  String // format: "resource:action" e.g. "sale:create"
-    role_id String
-
-    role Role @relation(fields: [role_id], references: [id])
+    name    PermissionEnum // format: "resource:action" e.g. "sale:create"
+    roles   RolePermission[]
 
     created_at DateTime  @default(now())
     updated_at DateTime  @updatedAt
     deleted_at DateTime?
 
     @@map("permissions")
+}
+
+enum PermissionEnum {
+    user_view
+    user_create
+    user_edit
+    user_delete
+}
+
+model RolePermission {
+  role_id       String
+  permission_id String
+
+  role       Role       @relation(fields: [role_id], references: [id])
+  permission Permission @relation(fields: [permission_id], references: [id])
+
+  @@id([role_id, permission_id])
+  @@map("role_permissions")
 }

@@ -1,5 +1,5 @@
 {
-  "name": "nest-multi-tenant",
+  "name": "nest-multitenant",
   "version": "0.0.1",
   "description": "",
   "author": "han.dev",
@@ -21,8 +21,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "docker:dev": "npx prisma generate && docker compose up --build",
-    "docker:generate": "docker exec -it nest-multi-tenant-app-1 npx prisma generate",
-    "docker:migrate": "docker exec -it nest-multi-tenant-app-1 npx prisma migrate dev"
+    "docker:generate": "docker exec -it nest-multitenant-app-1 npx prisma generate",
+    "docker:migrate": "docker exec -it nest-multitenant-app-1 npx prisma migrate dev"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

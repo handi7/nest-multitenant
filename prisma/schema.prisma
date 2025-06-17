@@ -1,0 +1,104 @@
+generator client {
+    provider      = "prisma-client-js"
+    output        = "./client"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Tenant {
+    id   String @id @default(uuid())
+    name String
+
+    users    User[]
+    roles    Role[]
+    branches Branch[]
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("tenants")
+}
+
+model Branch {
+    id        String @id @default(uuid())
+    name      String
+    tenant_id String
+
+    tenant     Tenant     @relation(fields: [tenant_id], references: [id])
+    user_roles UserRole[]
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("branches")
+}
+
+model User {
+    id        String @id @default(uuid())
+    name      String
+    email     String @unique
+    password  String
+    tenant_id String
+
+    tenant Tenant     @relation(fields: [tenant_id], references: [id])
+    roles  UserRole[]
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("users")
+}
+
+model Role {
+    id        String @id @default(uuid())
+    name      String
+    tenant_id String
+
+    tenant      Tenant       @relation(fields: [tenant_id], references: [id])
+    permissions Permission[]
+    user_roles  UserRole[]
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("roles")
+}
+
+model UserRole {
+    id        String  @id @default(uuid())
+    user_id   String
+    role_id   String
+    branch_id String? // null = tenant-wide access
+
+    user   User    @relation(fields: [user_id], references: [id])
+    role   Role    @relation(fields: [role_id], references: [id])
+    branch Branch? @relation(fields: [branch_id], references: [id])
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("user_roles")
+}
+
+model Permission {
+    id      String @id @default(uuid())
+    action  String // format: "resource:action" e.g. "sale:create"
+    role_id String
+
+    role Role @relation(fields: [role_id], references: [id])
+
+    created_at DateTime  @default(now())
+    updated_at DateTime  @updatedAt
+    deleted_at DateTime?
+
+    @@map("permissions")
+}

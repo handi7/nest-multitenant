@@ -5,6 +5,7 @@ import { AuthModule } from "./modules/auth/auth.module";
 import { RedisModule } from "./redis/redis.module";
 import { SeederModule } from "./seeder/seeder.module";
 import { PermissionModule } from './modules/permission/permission.module';
+import { RoleModule } from './modules/role/role.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PermissionModule } from './modules/permission/permission.module';
     SeederModule,
     AuthModule,
     PermissionModule,
+    RoleModule,
   ],
   controllers: [],
   providers: [],

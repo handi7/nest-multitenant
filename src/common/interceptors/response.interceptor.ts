@@ -5,9 +5,9 @@ import {
   Injectable,
   Logger,
   NestInterceptor,
-} from '@nestjs/common';
-import { STATUS_CODES } from 'http';
-import { catchError, map, Observable, throwError } from 'rxjs';
+} from "@nestjs/common";
+import { STATUS_CODES } from "http";
+import { catchError, map, Observable, throwError } from "rxjs";
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
@@ -23,6 +23,19 @@ export class ResponseInterceptor implements NestInterceptor {
         const logMessage = `${request.originalUrl} --> ${statusCode} ${STATUS_CODES[statusCode]}`;
         logger.log(logMessage, request.method);
 
+        if (data.data && data.meta) {
+          return {
+            method: request.method,
+            path: request.url,
+            timestamp: new Date().toISOString(),
+            statusCode,
+            success: true,
+            data: data.data,
+            meta: data.meta,
+            error: null,
+          };
+        }
+
         return {
           method: request.method,
           path: request.url,
@@ -30,6 +43,7 @@ export class ResponseInterceptor implements NestInterceptor {
           statusCode,
           success: true,
           data,
+          meta: null,
           error: null,
         };
       }),
@@ -38,8 +52,8 @@ export class ResponseInterceptor implements NestInterceptor {
 
         const isErrorValidation = Boolean(err.response?.validation);
 
-        if (isErrorValidation && !request.originalUrl.startsWith('/auth')) {
-          logger.log(request.body, 'REQUEST');
+        if (isErrorValidation && !request.originalUrl.startsWith("/auth")) {
+          logger.log(request.body, "REQUEST");
         }
 
         const logMessage = `${request.originalUrl} --> ${statusCode} ${err.message}`;
@@ -47,12 +61,8 @@ export class ResponseInterceptor implements NestInterceptor {
         logger.error(logMessage, stack, request.method);
 
         const error = {
-          type:
-            STATUS_CODES?.[statusCode] ||
-            err.response?.error ||
-            err.name ||
-            'Error',
-          message: statusCode === 500 ? 'Internal Server Error' : err.message,
+          type: STATUS_CODES?.[statusCode] || err.response?.error || err.name || "Error",
+          message: statusCode === 500 ? "Internal Server Error" : err.message,
           errors: err.response?.validation || null,
         };
 
@@ -63,6 +73,7 @@ export class ResponseInterceptor implements NestInterceptor {
           statusCode,
           success: false,
           data: null,
+          meta: null,
           error,
         };
         return throwError(() => new HttpException(errorResponse, statusCode));

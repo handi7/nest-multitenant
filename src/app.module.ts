@@ -4,6 +4,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { RedisModule } from "./redis/redis.module";
 import { SeederModule } from "./seeder/seeder.module";
+import { PermissionModule } from './modules/permission/permission.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SeederModule } from "./seeder/seeder.module";
     RedisModule,
     SeederModule,
     AuthModule,
+    PermissionModule,
   ],
   controllers: [],
   providers: [],

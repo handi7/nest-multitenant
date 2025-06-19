@@ -4,25 +4,33 @@ export interface PaginateOptions {
   searchFields?: string[];
   search?: string;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
+  desc?: boolean;
 }
 
-export interface PaginateArgs {
+interface PaginateArgs {
   where?: any;
   orderBy?: any;
   skip?: number;
   take?: number;
 }
 
-export async function paginate<T, Args extends PaginateArgs>(
+export async function paginate<T, Args extends PaginateArgs, R = T>(
   prismaModel: {
     findMany: (args: Args) => Promise<T[]>;
     count: (args?: any) => Promise<number>;
   },
   args: Args,
   options: PaginateOptions = {},
+  mapper?: (item: T) => R,
 ) {
-  const { page = 1, limit = 10, search, searchFields = [], sortBy, sortOrder = "asc" } = options;
+  const {
+    page = 1,
+    limit = 10,
+    search = "",
+    searchFields = [],
+    sortBy = "",
+    desc = false,
+  } = options;
 
   const where = args.where || {};
 
@@ -37,7 +45,7 @@ export async function paginate<T, Args extends PaginateArgs>(
     where.OR = searchQuery;
   }
 
-  const orderBy = sortBy ? [{ [sortBy]: sortOrder }] : [];
+  const orderBy = sortBy ? [{ [sortBy]: desc ? "desc" : "asc" }] : [];
 
   const [data, total] = await Promise.all([
     prismaModel.findMany({
@@ -50,22 +58,24 @@ export async function paginate<T, Args extends PaginateArgs>(
     prismaModel.count({ where }),
   ]);
 
+  const transformed = mapper ? data.map(mapper) : data;
+
   const totalPages = Math.ceil(total / limit);
   const prevPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
 
   return {
-    data,
+    data: transformed,
     meta: {
       total,
+      totalPages,
       page,
       limit,
-      totalPages,
       prevPage,
       nextPage,
       search,
       sortBy: sortBy || null,
-      sortOrder: sortBy ? sortOrder : null,
+      desc,
     },
   };
 }

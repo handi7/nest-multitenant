@@ -1,12 +1,12 @@
 import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
 import { paginate, PaginateOptions } from "src/common/helpers/paginate";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserDto } from "src/dtos/user.dto";
 import { PaginationQueryDto } from "src/dtos/pagination-query.dto";
 import { Prisma } from "prisma/client";
 import { genSalt, hash } from "bcryptjs";
+import { CreateUserDto, UpdateUserDto } from "./user.dto";
+import { mapToUserWithRoles } from "./user.mapper";
 
 @Injectable()
 export class UserService {
@@ -73,7 +73,7 @@ export class UserService {
         id: true,
         name: true,
         email: true,
-        roles: { include: { role: true } },
+        roles: { include: { branch: true, role: true } },
         created_at: true,
       },
     };
@@ -83,7 +83,7 @@ export class UserService {
       ...paginationQuery,
     };
 
-    return paginate(this.prisma.user, args, options);
+    return paginate(this.prisma.user, args, options, mapToUserWithRoles);
   }
 
   findOne(id: number) {

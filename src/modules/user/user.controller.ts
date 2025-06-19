@@ -1,11 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { CreateUserDto } from "./dto/create-user.dto";
-import { UpdateUserDto } from "./dto/update-user.dto";
 import { Permissions } from "src/common/decorators/permissions.decorator";
 import { PermissionEnum } from "prisma/client";
 import { RequestDto } from "src/dtos/request.dto";
 import { PaginationQueryDto } from "src/dtos/pagination-query.dto";
+import { CreateUserDto } from "./user.dto";
 
 @Controller()
 export class UserController {

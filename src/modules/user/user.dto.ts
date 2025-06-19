@@ -1,3 +1,4 @@
+import { PartialType } from "@nestjs/mapped-types";
 import { IsEmail, IsNotEmpty, IsString, IsUUID, MaxLength, MinLength } from "class-validator";
 
 export class CreateUserDto {
@@ -26,3 +27,5 @@ export class CreateUserDto {
   @IsNotEmpty({ message: "Branch is required." })
   branch_id: string;
 }
+
+export class UpdateUserDto extends PartialType(CreateUserDto) {}

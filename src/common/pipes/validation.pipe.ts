@@ -1,61 +1,59 @@
-import {
-  Injectable,
-  ValidationPipe,
-  BadRequestException,
-} from '@nestjs/common';
-import { ValidationError } from 'class-validator';
+import { Injectable, BadRequestException, PipeTransform, ArgumentMetadata } from "@nestjs/common";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
 @Injectable()
-export class CustomValidationPipe extends ValidationPipe {
-  constructor() {
-    super({
-      exceptionFactory: (errors: ValidationError[]) => {
-        const formattedErrors = CustomValidationPipe.formatErrors(errors);
+export class CustomValidationPipe implements PipeTransform {
+  async transform(value: any, metadata: ArgumentMetadata) {
+    const { metatype } = metadata;
 
-        return new BadRequestException({
-          message: 'Validation error',
-          validation: formattedErrors,
-        });
-      },
-      stopAtFirstError: true,
+    if (!metatype || !this.toValidate(metatype)) {
+      return value;
+    }
+
+    const object = plainToInstance(metatype, value);
+    const errors = await validate(object, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      skipMissingProperties: false,
+      stopAtFirstError: false,
     });
+
+    if (errors.length > 0) {
+      throw new BadRequestException({
+        message: "Validation failed",
+        validation: this.formatErrors(errors),
+      });
+    }
+
+    return object;
   }
 
-  private static formatErrors(errors: ValidationError[]): any {
-    let formatted: Record<string, any> = {};
+  private toValidate(metatype: Function): boolean {
+    const types: Function[] = [String, Boolean, Number, Array, Object];
+    return !types.includes(metatype);
+  }
 
-    errors.forEach((error) => {
-      if (error.children && error.children.length) {
-        if (Array.isArray(formatted[error.property])) {
-          formatted[error.property].push(this.formatErrors(error.children));
-        } else if (/^\d+$/.test(error.property)) {
-          // Jika properti adalah angka, artinya bagian dari array
-          const index = Number(error.property);
-          if (!Array.isArray(formatted)) Object.assign(formatted, []);
-          formatted[index] = this.formatErrors(error.children);
-        } else {
-          formatted[error.property] = this.formatErrors(error.children);
-        }
-      } else {
-        formatted[error.property] = error.constraints
-          ? Object.values(error.constraints)[0]
-          : 'Invalid input';
-      }
-    });
+  private formatErrors(errors: any[]) {
+    return errors.flatMap((error) => this.mapValidationError(error));
+  }
 
-    // Jika ada properti yang numerik (array), ubah object jadi array
-    Object.keys(formatted).forEach((key) => {
-      if (/^\d+$/.test(key)) {
-        const arrayErrors = Object.keys(formatted)
-          .filter((k) => /^\d+$/.test(k))
-          .map((k) => formatted[k]);
+  private mapValidationError(error: any, parentPath = ""): any {
+    const path = parentPath ? `${parentPath}.${error.property}` : error.property;
 
-        formatted = arrayErrors;
-      }
-    });
+    let current = null;
+    if (error.constraints) {
+      current = {
+        field: path,
+        message: Object.values(error.constraints).join(" "),
+      };
+    }
 
-    console.log('formatted', formatted);
+    const children = (error.children || []).flatMap((child: any) =>
+      this.mapValidationError(child, path),
+    );
 
-    return formatted;
+    if (current) return [current, ...this.formatErrors(children)];
+    return children;
   }
 }

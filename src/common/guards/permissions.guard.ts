@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, ForbiddenException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { PERMISSIONS_KEY } from "../decorators/permissions.decorator";
-import { RequestDto } from "src/dtos/request.dto";
 import { PermissionEnum } from "prisma/client";
 
 @Injectable()
@@ -18,7 +17,7 @@ export class PermissionsGuard implements CanActivate {
       return true;
     }
 
-    const request: RequestDto = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AppRequest>();
     const user = request.user;
     const branchId = request.branchId ?? null;
 

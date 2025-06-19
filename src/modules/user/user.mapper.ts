@@ -1,6 +1,4 @@
-import { UserDto } from "src/dtos/user.dto";
-
-export function mapToUserWithRoles(user: UserDto) {
+export function mapToUserWithRoles(user: Partial<UserType>) {
   const roles = (user.roles || []).map((userRole) => ({
     ...userRole,
     branch: userRole.branch?.name || null,

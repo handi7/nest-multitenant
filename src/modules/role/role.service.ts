@@ -7,14 +7,13 @@ import {
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserDto } from "src/dtos/user.dto";
 import { Prisma } from "prisma/client";
 
 @Injectable()
 export class RoleService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(user: UserDto, dto: CreateRoleDto) {
+  async create(user: UserType, dto: CreateRoleDto) {
     try {
       if (dto.name.toLowerCase() === "owner") {
         throw new BadRequestException("Cannot create owner role.");
@@ -57,7 +56,7 @@ export class RoleService {
     }
   }
 
-  async findAll(user: UserDto) {
+  async findAll(user: UserType) {
     try {
       const res = await this.prisma.role.findMany({
         where: { tenant_id: user.tenant_id, deleted_at: null },
@@ -92,7 +91,7 @@ export class RoleService {
     }
   }
 
-  async update(user: UserDto, id: string, dto: UpdateRoleDto) {
+  async update(user: UserType, id: string, dto: UpdateRoleDto) {
     try {
       if (!dto.name && !dto.permissions) {
         throw new BadRequestException("At least one field must be provided.");
@@ -168,7 +167,7 @@ export class RoleService {
     }
   }
 
-  async remove(user: UserDto, id: string) {
+  async remove(user: UserType, id: string) {
     try {
       const role = await this.prisma.role.findFirst({
         where: { id, tenant_id: user.tenant_id },

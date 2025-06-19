@@ -4,10 +4,8 @@ import { JwtService } from "@nestjs/jwt";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 import { PrismaService } from "src/prisma/prisma.service";
 import { RedisService } from "src/redis/redis.service";
-import { RedisSession } from "src/dtos/redis-session.dto";
 import { NO_BRANCH_REQUIRED_KEY } from "../decorators/no-branch-required.decorator";
-
-type AuthorizedRequest = Express.Request & { authorization: string };
+import { IncomingHttpHeaders } from "http";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,7 +21,7 @@ export class AuthGuard implements CanActivate {
       return this.reflector.getAllAndOverride<T>(key, [context.getHandler(), context.getClass()]);
     };
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AppRequest>();
     const token = this.extractTokenFromHeader(request.headers); // Bearer token
 
     if (check<boolean>(IS_PUBLIC_KEY) && !token) return true;
@@ -90,7 +88,7 @@ export class AuthGuard implements CanActivate {
     return this.jwtService.verifyAsync(token, { secret: process.env.JWT_SECRET });
   }
 
-  private extractTokenFromHeader(headers: AuthorizedRequest): string | undefined {
+  private extractTokenFromHeader(headers: IncomingHttpHeaders): string | undefined {
     const [type, token] = headers.authorization?.split(" ") ?? [];
     return type === "Bearer" ? token : undefined;
   }

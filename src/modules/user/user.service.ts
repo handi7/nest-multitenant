@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common";
 import { paginate, PaginateOptions } from "src/common/helpers/paginate";
 import { PrismaService } from "src/prisma/prisma.service";
-import { UserDto } from "src/dtos/user.dto";
 import { PaginationQueryDto } from "src/dtos/pagination-query.dto";
 import { Prisma } from "prisma/client";
 import { genSalt, hash } from "bcryptjs";
@@ -17,7 +16,7 @@ import { mapToUserWithRoles } from "./user.mapper";
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(user: UserDto, dto: CreateUserDto) {
+  async create(user: UserType, dto: CreateUserDto) {
     try {
       const existingUser = await this.prisma.user.findFirst({
         where: { tenant_id: user.tenant_id, email: { equals: dto.email, mode: "insensitive" } },
@@ -71,7 +70,7 @@ export class UserService {
     }
   }
 
-  findAll(user: UserDto, paginationQuery: PaginationQueryDto) {
+  findAll(user: UserType, paginationQuery: PaginationQueryDto) {
     const args: Prisma.UserFindManyArgs = {
       where: { tenant_id: user.tenant_id },
       select: {
@@ -91,7 +90,7 @@ export class UserService {
     return paginate(this.prisma.user, args, options, mapToUserWithRoles);
   }
 
-  async findOne(id: string, user: UserDto) {
+  async findOne(id: string, user: UserType) {
     try {
       const result = await this.prisma.user.findFirst({
         where: { id, tenant_id: user.tenant_id },
@@ -108,7 +107,7 @@ export class UserService {
         throw new NotFoundException("User not found.");
       }
 
-      return result;
+      return mapToUserWithRoles(result);
     } catch (error) {
       return Promise.reject(error);
     }

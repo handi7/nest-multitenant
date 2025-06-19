@@ -2,7 +2,6 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from "@nestjs/
 import { RoleService } from "./role.service";
 import { CreateRoleDto } from "./dto/create-role.dto";
 import { UpdateRoleDto } from "./dto/update-role.dto";
-import { RequestDto } from "src/dtos/request.dto";
 import { Permissions } from "src/common/decorators/permissions.decorator";
 import { PermissionEnum } from "prisma/client";
 
@@ -12,13 +11,13 @@ export class RoleController {
 
   @Post("role")
   @Permissions(PermissionEnum.role_create)
-  create(@Req() req: RequestDto, @Body() createRoleDto: CreateRoleDto) {
+  create(@Req() req: AppRequest, @Body() createRoleDto: CreateRoleDto) {
     return this.roleService.create(req.user, createRoleDto);
   }
 
   @Get("roles")
   @Permissions(PermissionEnum.role_view)
-  findAll(@Req() req: RequestDto) {
+  findAll(@Req() req: AppRequest) {
     return this.roleService.findAll(req.user);
   }
 
@@ -30,7 +29,7 @@ export class RoleController {
 
   @Patch("role/:id")
   @Permissions(PermissionEnum.role_edit)
-  update(@Req() req: RequestDto, @Param("id") id: string, @Body() dto: UpdateRoleDto) {
+  update(@Req() req: AppRequest, @Param("id") id: string, @Body() dto: UpdateRoleDto) {
     console.log({ dto });
 
     return this.roleService.update(req.user, id, dto);
@@ -38,7 +37,7 @@ export class RoleController {
 
   @Delete("role/:id")
   @Permissions(PermissionEnum.role_delete)
-  remove(@Req() req: RequestDto, @Param("id") id: string) {
+  remove(@Req() req: AppRequest, @Param("id") id: string) {
     return this.roleService.remove(req.user, id);
   }
 }

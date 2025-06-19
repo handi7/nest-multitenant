@@ -22,10 +22,11 @@ export class UserController {
     return this.userService.findAll(req.user, query);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(+id);
-  // }
+  @Get("user/:id")
+  @Permissions(PermissionEnum.user_view)
+  findOne(@Param("id") id: string, @Req() req: RequestDto) {
+    return this.userService.findOne(id, req.user);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {

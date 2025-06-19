@@ -1,4 +1,9 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { paginate, PaginateOptions } from "src/common/helpers/paginate";
 import { PrismaService } from "src/prisma/prisma.service";
 import { UserDto } from "src/dtos/user.dto";
@@ -86,8 +91,27 @@ export class UserService {
     return paginate(this.prisma.user, args, options, mapToUserWithRoles);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string, user: UserDto) {
+    try {
+      const result = await this.prisma.user.findFirst({
+        where: { id, tenant_id: user.tenant_id },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          roles: { include: { branch: true, role: true } },
+          created_at: true,
+        },
+      });
+
+      if (!result) {
+        throw new NotFoundException("User not found.");
+      }
+
+      return result;
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

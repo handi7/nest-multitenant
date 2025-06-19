@@ -75,9 +75,9 @@ export class AuthGuard implements CanActivate {
         }
       }
 
-      request["user"] = user;
-      request["branchId"] = branchId;
-      request["token"] = token;
+      request.user = user;
+      request.branchId = branchId;
+      request.token = token;
       return true;
     } catch (error) {
       throw new UnauthorizedException(error.message || "Unauthorized");

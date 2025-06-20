@@ -25,9 +25,9 @@ export class PermissionSeeder {
         skipDuplicates: true,
       });
 
-      this.logger.log(`Inserted ${permissionsToInsert.length} permissions.`);
+      this.logger.log(`🔧 Inserted ${permissionsToInsert.length} new permissions.`);
     } else {
-      this.logger.log("No new permissions to insert.");
+      this.logger.log("✅ No new permissions to insert.");
     }
 
     this.logger.log("================= PERMISSION SEEDER END =================");

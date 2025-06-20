@@ -7,6 +7,7 @@ import { SeederModule } from "./seeder/seeder.module";
 import { PermissionModule } from './modules/permission/permission.module';
 import { RoleModule } from './modules/role/role.module';
 import { UserModule } from './modules/user/user.module';
+import { BranchModule } from './modules/branch/branch.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from './modules/user/user.module';
     PermissionModule,
     RoleModule,
     UserModule,
+    BranchModule,
   ],
   controllers: [],
   providers: [],

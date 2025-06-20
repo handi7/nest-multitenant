@@ -111,6 +111,11 @@ enum PermissionEnum {
     role_create
     role_edit
     role_delete
+
+    branch_view
+    branch_create
+    branch_edit
+    branch_delete
 }
 
 model RolePermission {

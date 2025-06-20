@@ -94,12 +94,13 @@ export class UserService {
     try {
       const result = await this.prisma.user.findFirst({
         where: { id, tenant_id: user.tenant_id },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          roles: { include: { branch: true, role: true } },
-          created_at: true,
+        include: {
+          roles: {
+            include: {
+              branch: true,
+              role: true,
+            },
+          },
         },
       });
 

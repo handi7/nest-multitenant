@@ -4,13 +4,15 @@ import { Permission, Role, RolePermission, User, UserRole } from "prisma/client"
 export {};
 
 declare global {
+  interface RoleType extends Partial<Role> {
+    permissions?: (Partial<RolePermission> & {
+      permission?: Partial<Permission>;
+    })[];
+  }
+
   interface UserType extends Partial<User> {
     roles?: (Partial<UserRole> & {
-      role?: Partial<Role> & {
-        permissions?: (Partial<RolePermission> & {
-          permission?: Partial<Permission>;
-        })[];
-      };
+      role?: Partial<RoleType>;
       branch?: Branch | null;
     })[];
   }

@@ -7,6 +7,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import { Prisma } from "prisma/client";
 import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
+import { mapToRoleWithPermissions } from "./role.mapper";
 
 @Injectable()
 export class RoleService {
@@ -84,7 +85,7 @@ export class RoleService {
         throw new NotFoundException("Role not found.");
       }
 
-      return role;
+      return mapToRoleWithPermissions(role);
     } catch (error) {
       return Promise.reject(error);
     }

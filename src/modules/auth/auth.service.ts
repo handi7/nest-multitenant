@@ -5,6 +5,7 @@ import { compareSync, genSalt, hash } from "bcryptjs";
 import { LoginDto } from "./dto/login.dto";
 import { JwtService } from "@nestjs/jwt";
 import { RedisService } from "src/redis/redis.service";
+import { mapToUserWithRolesAndPermissions } from "../user/user.mapper";
 
 @Injectable()
 export class AuthService {
@@ -128,8 +129,6 @@ export class AuthService {
         throw new BadRequestException("Invalid credentials.");
       }
 
-      const { password: _, ...userData } = user;
-
       const jwtPayload = {
         id: user.id,
         email: user.email,
@@ -155,7 +154,7 @@ export class AuthService {
         );
       }
 
-      return { access_token, refresh_token, user: userData };
+      return { access_token, refresh_token, user: mapToUserWithRolesAndPermissions(user) };
     } catch (error) {
       return Promise.reject(error);
     }

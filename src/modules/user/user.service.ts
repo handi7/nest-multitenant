@@ -9,7 +9,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { PaginationQueryDto } from "src/dtos/pagination-query.dto";
 import { Prisma } from "prisma/client";
 import { genSalt, hash } from "bcryptjs";
-import { CreateUserDto, UpdateUserDto } from "./user.dto";
+import { CreateUserDto } from "./user.dto";
 import { mapToUserWithRoles } from "./user.mapper";
 
 @Injectable()
@@ -112,13 +112,5 @@ export class UserService {
     } catch (error) {
       return Promise.reject(error);
     }
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
   }
 }

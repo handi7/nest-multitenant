@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Req, Query } from "@nestjs/common";
+import { Controller, Get, Post, Body, Param, Req, Query } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { Permissions } from "src/common/decorators/permissions.decorator";
 import { PermissionEnum } from "prisma/client";
@@ -26,14 +26,4 @@ export class UserController {
   findOne(@Param("id") id: string, @Req() req: AppRequest) {
     return this.userService.findOne(id, req.user);
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.userService.remove(+id);
-  // }
 }

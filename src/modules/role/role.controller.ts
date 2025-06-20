@@ -1,9 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Req } from "@nestjs/common";
 import { RoleService } from "./role.service";
-import { CreateRoleDto } from "./dto/create-role.dto";
-import { UpdateRoleDto } from "./dto/update-role.dto";
 import { Permissions } from "src/common/decorators/permissions.decorator";
 import { PermissionEnum } from "prisma/client";
+import { CreateRoleDto, UpdateRoleDto } from "./role.dto";
 
 @Controller()
 export class RoleController {
